@@ -15,14 +15,16 @@ public class ResumeService : IResumeService
     private readonly IFileService _fileService;
     private readonly IPdfService _pdfService;
     private readonly IAIService _aiService;
+    private readonly ICacheService _cacheService;
 
     public ResumeService(IResumeRepository resumeRepository, IFileService fileService, IPdfService pdfService, 
-        IAIService aiService,ILogger<ResumeService> logger)
+        IAIService aiService,ILogger<ResumeService> logger, ICacheService cacheService)
     {
         _resumeRepository = resumeRepository;
         _fileService = fileService;
         _pdfService = pdfService;
         _aiService = aiService;
+        _cacheService = cacheService;
     }
 
 
@@ -43,7 +45,7 @@ public class ResumeService : IResumeService
         };
 
         await _resumeRepository.AddAsync(resume);
-
+        await _cacheService.RemoveAsync("all_resumes");
         // Step 5: Return response
         return new ResumeAnalysisResponse
         {
@@ -56,11 +58,37 @@ public class ResumeService : IResumeService
         };
     }
 
+    //public async Task<List<ResumeDto>> GetAllAsync()
+    //{
+    //    var resumes = await _resumeRepository.GetAllAsync();
+
+    //    return resumes.Select(r => new ResumeDto
+    //    {
+    //        Id = r.Id,
+    //        FileName = r.FileName,
+    //        ResumeScore = r.ResumeScore,
+    //        AtsScore = r.AtsScore,
+    //        Summary = r.Summary,
+    //        UploadedAt = r.UploadedAt
+    //    }).ToList();
+    //}
+
     public async Task<List<ResumeDto>> GetAllAsync()
     {
+        const string cacheKey = "all_resumes";
+
+        // 1. Check Redis
+        var cachedResumes = await _cacheService.GetAsync<List<ResumeDto>>(cacheKey);
+
+        if (cachedResumes != null)
+        {
+            return cachedResumes;
+        }
+
+        // 2. Get from Database
         var resumes = await _resumeRepository.GetAllAsync();
 
-        return resumes.Select(r => new ResumeDto
+        var result = resumes.Select(r => new ResumeDto
         {
             Id = r.Id,
             FileName = r.FileName,
@@ -69,6 +97,11 @@ public class ResumeService : IResumeService
             Summary = r.Summary,
             UploadedAt = r.UploadedAt
         }).ToList();
+
+        // 3. Save into Redis
+        await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(5));
+
+        return result;
     }
 
     public async Task<Resume?> GetByIdAsync(Guid id)
@@ -84,6 +117,7 @@ public class ResumeService : IResumeService
             throw new Exception("Resume not found.");
 
         await _resumeRepository.DeleteAsync(resume);
+        await _cacheService.RemoveAsync("all_resumes");
     }
 
     public async Task<PagedResponse<ResumeDto>> GetPagedAsync(ResumeQueryParameters query)

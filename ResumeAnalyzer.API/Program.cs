@@ -16,6 +16,7 @@ using ResumeAnalyzer.Infrastructure.ExternalServices;
 using ResumeAnalyzer.Infrastructure.Repositories;
 using Serilog;
 using Microsoft.OpenApi.Models;
+using ResumeAnalyzer.Infrastructure.Caching;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 30).CreateLogger();
@@ -67,8 +68,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    options.InstanceName = "ResumeAnalyzer_";
+});
+
 builder.Services.AddScoped<IResumeRepository, ResumeRepository>();
 builder.Services.AddScoped<IResumeService, ResumeService>();
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<IAIService, GroqAIService>();
