@@ -141,6 +141,25 @@ Aman Rai
 
 .NET Full Stack Developer
 
+
+# Changelog
+
+## v1.0.0
+
+### Added
+- Clean Architecture
+- Repository Pattern
+- JWT Authentication
+- Refresh Token Authentication
+- Redis Caching
+- AutoMapper
+- Serilog
+- FluentValidation
+- Pagination
+
+
+
+
 GitHub
 LinkedIn
 Email
