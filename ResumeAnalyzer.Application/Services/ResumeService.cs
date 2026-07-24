@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using ResumeAnalyzer.Application.Common;
 using ResumeAnalyzer.Application.DTOs.Request;
 using ResumeAnalyzer.Application.DTOs.Response;
 using ResumeAnalyzer.Application.DTOs.Resume;
 using ResumeAnalyzer.Application.Interfaces;
+using ResumeAnalyzer.Application.Jobs;
+using System.Text.Json;
 using ResumeAnalyzer.Domain.Entities;
 
 namespace ResumeAnalyzer.Application.Services;
@@ -17,8 +20,8 @@ public class ResumeService : IResumeService
     private readonly IAIService _aiService;
     private readonly ICacheService _cacheService;
 
-    public ResumeService(IResumeRepository resumeRepository, IFileService fileService, IPdfService pdfService, 
-        IAIService aiService,ILogger<ResumeService> logger, ICacheService cacheService)
+    public ResumeService(IResumeRepository resumeRepository, IFileService fileService, IPdfService pdfService,
+        IAIService aiService, ILogger<ResumeService> logger, ICacheService cacheService)
     {
         _resumeRepository = resumeRepository;
         _fileService = fileService;
@@ -28,7 +31,7 @@ public class ResumeService : IResumeService
     }
 
 
-    public async Task<ResumeAnalysisResponse> AnalyzeResumeAsync(Stream stream,string fileName)
+    public async Task<ResumeAnalysisResponse> AnalyzeResumeAsync(Stream stream, string fileName)
     {
         var filePath = await _fileService.SaveFileAsync(stream, fileName);
         var resumeText = await _pdfService.ExtractTextAsync(filePath);
@@ -92,6 +95,7 @@ public class ResumeService : IResumeService
         {
             Id = r.Id,
             FileName = r.FileName,
+            Status = r.Status,
             ResumeScore = r.ResumeScore,
             AtsScore = r.AtsScore,
             Summary = r.Summary,
@@ -107,6 +111,38 @@ public class ResumeService : IResumeService
     public async Task<Resume?> GetByIdAsync(Guid id)
     {
         return await _resumeRepository.GetByIdAsync(id);
+    }
+
+    public async Task<ResumeDto> GetResumeByIdAsync(Guid id)
+    {
+        var resume = await _resumeRepository.GetByIdAsync(id);
+
+        if (resume == null)
+        {
+            return null;
+        }
+
+        return new ResumeDto
+        {
+            Id = resume.Id,
+            FileName = resume.FileName,
+            Status = resume.Status,
+            ResumeScore = resume.ResumeScore,
+            AtsScore = resume.AtsScore,
+            Summary = resume.Summary,
+
+            Skills = string.IsNullOrWhiteSpace(resume.Skills)
+                ? new List<string>()
+                : JsonSerializer.Deserialize<List<string>>(resume.Skills),
+
+            MissingSkills = string.IsNullOrWhiteSpace(resume.MissingSkills)
+                ? new List<string>()
+                : JsonSerializer.Deserialize<List<string>>(resume.MissingSkills),
+
+            Suggestions = string.IsNullOrWhiteSpace(resume.Suggestions)
+                ? new List<string>()
+                : JsonSerializer.Deserialize<List<string>>(resume.Suggestions)
+        };
     }
 
     public async Task DeleteAsync(Guid id)
@@ -144,5 +180,51 @@ public class ResumeService : IResumeService
         };
     }
 
+    public async Task ProcessResumeAnalysisAsync(Guid resumeId)
+    {
+
+        var resume = await _resumeRepository.GetByIdAsync(resumeId);
+
+        if (resume == null)
+            throw new Exception("Resume not found.");
+
+        resume.Status = "Processing";
+        await _resumeRepository.UpdateAsync(resume);
+
+        var resumeText = await _pdfService.ExtractTextAsync(resume.FilePath);
+
+        var aiResult = await _aiService.AnalyzeResumeAsync(resumeText);
+
+        resume.ResumeScore = aiResult.ResumeScore;
+        resume.AtsScore = aiResult.AtsScore;
+        resume.Summary = aiResult.Summary;
+        resume.Status = "Completed";
+        resume.Skills = JsonSerializer.Serialize(aiResult.Skills);
+        resume.MissingSkills = JsonSerializer.Serialize(aiResult.MissingSkills);
+        resume.Suggestions = JsonSerializer.Serialize(aiResult.Suggestions);
+        resume.UpdatedAt = DateTime.UtcNow;
+        await _resumeRepository.UpdateAsync(resume);
+
+        //await _cacheService.RemoveAsync(cacheKey.AllResumes);
+        await _cacheService.RemoveAsync("all_resumes");
+    }
+
+    public async Task<Guid> UploadResumeAsync(Stream stream, string fileName)
+    {
+        var filePath = await _fileService.SaveFileAsync(stream, fileName);
+
+        var resume = new Resume
+        {
+            FileName = fileName,
+            FilePath = filePath,
+            Status = "Pending"
+        };
+
+        await _resumeRepository.AddAsync(resume);
+
+        BackgroundJob.Enqueue<ResumeAnalysisJob>(x => x.AnalyzeResumeAsync(resume.Id));
+
+        return resume.Id;
+    }
 
 }

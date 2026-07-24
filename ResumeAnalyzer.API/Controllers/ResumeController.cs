@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ResumeAnalyzer.Application.DTOs;
 using ResumeAnalyzer.Application.DTOs.Resume;
 using ResumeAnalyzer.Application.Interfaces;
+using System.IO;
 
 namespace ResumeAnalyzer.API.Controllers
 {
@@ -19,18 +20,34 @@ namespace ResumeAnalyzer.API.Controllers
             _resumeService = resumeService;
         }
 
+        //[HttpPost("upload")]
+        //public async Task<IActionResult> Upload([FromForm] ResumeUploadRequest request)
+        //{
+        //    var result = await _resumeService.AnalyzeResumeAsync(request.File.OpenReadStream(),request.File.FileName);
+
+        //    return Ok(result);
+        //}
+
         [HttpPost("upload")]
         public async Task<IActionResult> Upload([FromForm] ResumeUploadRequest request)
         {
-            var result = await _resumeService.AnalyzeResumeAsync(request.File.OpenReadStream(),request.File.FileName);
+            var resumeId = await _resumeService.UploadResumeAsync(request.File.OpenReadStream(), request.File.FileName);
 
-            return Ok(result);
+            return Ok(new
+            {
+                ResumeId = resumeId,
+                Message = "Resume uploaded successfully. Analysis started in background."
+            });
         }
+
 
         [HttpGet("GetAllResume")]
         public async Task<IActionResult> GetAll()
         {
             var resumeList = await _resumeService.GetAllAsync();
+            if (resumeList == null)
+                return NotFound();
+
             return Ok(resumeList);
         }
 
@@ -44,6 +61,18 @@ namespace ResumeAnalyzer.API.Controllers
 
             return Ok(resume);
         }
+
+        [HttpGet("GetResumeById{id}")]
+        public async Task<IActionResult> GetResume(Guid id)
+        {
+            var result = await _resumeService.GetResumeByIdAsync(id);
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
+
 
         [HttpDelete("Delete{id}")]
         public async Task<IActionResult> Delete(Guid id)

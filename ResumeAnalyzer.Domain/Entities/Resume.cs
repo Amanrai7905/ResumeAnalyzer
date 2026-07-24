@@ -16,12 +16,16 @@ namespace ResumeAnalyzer.Domain.Entities
         public string AnalysisResult { get; set; } = string.Empty;
 
         public string FilePath { get; set; } = string.Empty;
+        public string Status { get; set; } = "Pending";
 
         public int ResumeScore { get; set; }
 
         public int AtsScore { get; set; }
 
         public string Summary { get; set; } = string.Empty;
+        public string Skills { get; set; } = "[]";
+        public string MissingSkills { get; set; } = "[]";
+        public string Suggestions { get; set; } = "[]";
 
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 

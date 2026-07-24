@@ -11,13 +11,19 @@ namespace ResumeAnalyzer.Application.DTOs.Resume
         public Guid Id { get; set; }
 
         public string FileName { get; set; } = string.Empty;
+        public string Status { get; set; }
 
         public int ResumeScore { get; set; }
 
         public int AtsScore { get; set; }
 
         public string Summary { get; set; } = string.Empty;
+        public List<string> Skills { get; set; }
 
+        public List<string> MissingSkills { get; set; }
+
+        public List<string> Suggestions { get; set; }
         public DateTime UploadedAt { get; set; }
+
     }
 }

@@ -17,8 +17,12 @@ namespace ResumeAnalyzer.Application.Interfaces
         Task<ResumeAnalysisResponse> AnalyzeResumeAsync(Stream stream,string fileName);
         Task<List<ResumeDto>> GetAllAsync();
         Task<Resume?> GetByIdAsync(Guid id);
+        Task<ResumeDto> GetResumeByIdAsync(Guid id);
         Task DeleteAsync(Guid id);
         //Task<List<ResumeDto>> GetPagedAsync(ResumeQueryParameters query);
         Task<PagedResponse<ResumeDto>> GetPagedAsync(ResumeQueryParameters query);
+        Task ProcessResumeAnalysisAsync(Guid resumeId);
+
+        Task<Guid> UploadResumeAsync(Stream stream, string fileName);
     }
 }
