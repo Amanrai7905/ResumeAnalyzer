@@ -18,6 +18,7 @@ using Serilog;
 using Microsoft.OpenApi.Models;
 using ResumeAnalyzer.Infrastructure.Caching;
 using Hangfire;
+using ResumeAnalyzer.API.Filters;
 using Hangfire.SqlServer;
 using ResumeAnalyzer.Application.Jobs;
 
@@ -26,10 +27,23 @@ Log.Logger = new LoggerConfiguration().WriteTo.Console().WriteTo.File("Logs/log-
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
-// Add services to the container.
+
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+        }));
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(options =>
@@ -83,13 +97,6 @@ builder.Services.AddHangfire(configuration => configuration
 
 builder.Services.AddHangfireServer();
 
-
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
-
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration["Redis:ConnectionString"];
@@ -136,14 +143,49 @@ builder.Services
 
 var app = builder.Build();
 
-app.UseHangfireDashboard("/hangfire");
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//    db.Database.Migrate();
+//}
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    var retries = 10;
+
+    while (retries > 0)
+    {
+        try
+        {
+            db.Database.Migrate();
+            break;
+        }
+        catch (Exception ex)
+        {
+            retries--;
+
+            Console.WriteLine($"Database not ready. Retrying... {retries}");
+
+            if (retries == 0)
+                throw;
+
+            Thread.Sleep(5000);
+        }
+    }
+}
+
+
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
+
+app.UseHttpsRedirection();
 
 app.UseGlobalExceptionMiddleware();
 
@@ -151,7 +193,12 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseHttpsRedirection();
+//app.UseHangfireDashboard("/hangfire");
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new AllowAllDashboardAuthorizationFilter() }
+});
 
 app.MapControllers();
 

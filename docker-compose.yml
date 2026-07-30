@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver-db
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "resumestaging@123"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  redis:
+    image: redis:latest
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: .
+      dockerfile: ResumeAnalyzer.API/Dockerfile
+    container_name: resume-api
+    ports:
+      - "5000:8080"
+    depends_on:
+      - db
+      - redis
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=db;Database=ResumeAnalyzerDB;User Id=sa;Password=resumestaging@123;TrustServerCertificate=True;"
+      Redis__ConnectionString: "redis:6379"
+
+volumes:
+  sql_data:
