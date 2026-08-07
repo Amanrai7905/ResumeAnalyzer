@@ -141,64 +141,69 @@ builder.Services
         };
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 //using (var scope = app.Services.CreateScope())
 //{
 //    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//    db.Database.Migrate();
+
+//    var retries = 10;
+
+//    while (retries > 0)
+//    {
+//        try
+//        {
+//            db.Database.Migrate();
+//            break;
+//        }
+//        catch (Exception ex)
+//        {
+//            retries--;
+
+//            Console.WriteLine($"Database not ready. Retrying... {retries}");
+
+//            if (retries == 0)
+//                throw;
+
+//            Thread.Sleep(5000);
+//        }
+//    }
 //}
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-    var retries = 10;
-
-    while (retries > 0)
-    {
-        try
-        {
-            db.Database.Migrate();
-            break;
-        }
-        catch (Exception ex)
-        {
-            retries--;
-
-            Console.WriteLine($"Database not ready. Retrying... {retries}");
-
-            if (retries == 0)
-                throw;
-
-            Thread.Sleep(5000);
-        }
-    }
-}
 
 
 
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
-//}
+}
 
 app.UseHttpsRedirection();
 
+app.UseCors("ReactPolicy");
 app.UseGlobalExceptionMiddleware();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
-//app.UseHangfireDashboard("/hangfire");
+app.UseHangfireDashboard("/hangfire");
 
-app.UseHangfireDashboard("/hangfire", new DashboardOptions
-{
-    Authorization = new[] { new AllowAllDashboardAuthorizationFilter() }
-});
+//app.UseHangfireDashboard("/hangfire", new DashboardOptions
+//{
+//    Authorization = new[] { new AllowAllDashboardAuthorizationFilter() }
+//});
 
 app.MapControllers();
 

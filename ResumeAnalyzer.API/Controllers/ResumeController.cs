@@ -20,14 +20,6 @@ namespace ResumeAnalyzer.API.Controllers
             _resumeService = resumeService;
         }
 
-        //[HttpPost("upload")]
-        //public async Task<IActionResult> Upload([FromForm] ResumeUploadRequest request)
-        //{
-        //    var result = await _resumeService.AnalyzeResumeAsync(request.File.OpenReadStream(),request.File.FileName);
-
-        //    return Ok(result);
-        //}
-
         [HttpPost("upload")]
         public async Task<IActionResult> Upload([FromForm] ResumeUploadRequest request)
         {
@@ -39,7 +31,6 @@ namespace ResumeAnalyzer.API.Controllers
                 Message = "Resume uploaded successfully. Analysis started in background."
             });
         }
-
 
         [HttpGet("GetAllResume")]
         public async Task<IActionResult> GetAll()
@@ -72,7 +63,6 @@ namespace ResumeAnalyzer.API.Controllers
 
             return Ok(result);
         }
-
 
         [HttpDelete("Delete{id}")]
         public async Task<IActionResult> Delete(Guid id)

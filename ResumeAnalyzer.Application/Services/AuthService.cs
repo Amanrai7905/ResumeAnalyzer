@@ -176,28 +176,5 @@ namespace ResumeAnalyzer.Application.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        //private string GenerateJwtToken(User user)
-        //{
-        //    var claims = new List<Claim>
-        //    {
-        //        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-        //        new Claim(JwtRegisteredClaimNames.Email, user.Email),
-        //        new Claim(ClaimTypes.Name, user.FullName),
-        //        new Claim(ClaimTypes.Role, user.Role),
-        //        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        //    };
-
-        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
-        //    var credentials = new SigningCredentials(key,SecurityAlgorithms.HmacSha256);
-
-        //    var token = new JwtSecurityToken(
-        //        issuer: _jwtSettings.Issuer,
-        //        audience: _jwtSettings.Audience,
-        //        claims: claims,
-        //        expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
-        //        signingCredentials: credentials);
-
-        //    return new JwtSecurityTokenHandler().WriteToken(token);
-        //}
     }
 }
