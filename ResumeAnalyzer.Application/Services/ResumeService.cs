@@ -9,6 +9,9 @@ using ResumeAnalyzer.Application.Interfaces;
 using ResumeAnalyzer.Application.Jobs;
 using System.Text.Json;
 using ResumeAnalyzer.Domain.Entities;
+using Microsoft.AspNetCore.SignalR;
+using ResumeAnalyzer.Application.Hubs;
+using ResumeAnalyzer.Application.DTOs.AI;
 
 namespace ResumeAnalyzer.Application.Services;
 
@@ -18,16 +21,18 @@ public class ResumeService : IResumeService
     private readonly IFileService _fileService;
     private readonly IPdfService _pdfService;
     private readonly IAIService _aiService;
+    private readonly IHubContext<ResumeHub> _hubContext;
     private readonly ICacheService _cacheService;
 
     public ResumeService(IResumeRepository resumeRepository, IFileService fileService, IPdfService pdfService,
-        IAIService aiService, ILogger<ResumeService> logger, ICacheService cacheService)
+        IAIService aiService, ILogger<ResumeService> logger, ICacheService cacheService, IHubContext<ResumeHub> hubContext)
     {
         _resumeRepository = resumeRepository;
         _fileService = fileService;
         _pdfService = pdfService;
         _aiService = aiService;
         _cacheService = cacheService;
+        _hubContext = hubContext;
     }
 
 
@@ -145,6 +150,17 @@ public class ResumeService : IResumeService
         };
     }
 
+    //public async Task DeleteAsync(Guid id)
+    //{
+    //    var resume = await _resumeRepository.GetByIdAsync(id);
+
+    //    if (resume == null)
+    //        throw new Exception("Resume not found.");
+
+    //    await _resumeRepository.DeleteAsync(resume);
+    //    await _cacheService.RemoveAsync("all_resumes");
+    //}
+
     public async Task DeleteAsync(Guid id)
     {
         var resume = await _resumeRepository.GetByIdAsync(id);
@@ -152,9 +168,16 @@ public class ResumeService : IResumeService
         if (resume == null)
             throw new Exception("Resume not found.");
 
+        // Delete physical PDF
+        await _fileService.DeleteFileAsync(resume.FilePath);
+
+        // Delete database record
         await _resumeRepository.DeleteAsync(resume);
+
+        // Remove Redis cache
         await _cacheService.RemoveAsync("all_resumes");
     }
+
 
     public async Task<PagedResponse<ResumeDto>> GetPagedAsync(ResumeQueryParameters query)
     {
@@ -195,6 +218,15 @@ public class ResumeService : IResumeService
 
         var aiResult = await _aiService.AnalyzeResumeAsync(resumeText);
 
+        // Check again because the user may have deleted
+        // the resume while AI analysis was running.
+        resume = await _resumeRepository.GetByIdAsync(resumeId);
+
+        if (resume == null)
+        {
+            return;
+        }
+
         resume.ResumeScore = aiResult.ResumeScore;
         resume.AtsScore = aiResult.AtsScore;
         resume.Summary = aiResult.Summary;
@@ -205,8 +237,18 @@ public class ResumeService : IResumeService
         resume.UpdatedAt = DateTime.UtcNow;
         await _resumeRepository.UpdateAsync(resume);
 
-        //await _cacheService.RemoveAsync(cacheKey.AllResumes);
         await _cacheService.RemoveAsync("all_resumes");
+        await _hubContext.Clients.All.SendAsync("ResumeAnalysisCompleted",
+        new
+        {
+            Id = resume.Id,
+            FileName = resume.FileName,
+            Status = resume.Status,
+            ResumeScore = resume.ResumeScore,
+            AtsScore = resume.AtsScore,
+            Summary = resume.Summary
+        });
+
     }
 
     public async Task<Guid> UploadResumeAsync(Stream stream, string fileName)
@@ -221,10 +263,33 @@ public class ResumeService : IResumeService
         };
 
         await _resumeRepository.AddAsync(resume);
+        // Invalidate cached resume list
+        await _cacheService.RemoveAsync("all_resumes");
 
         BackgroundJob.Enqueue<ResumeAnalysisJob>(x => x.AnalyzeResumeAsync(resume.Id));
 
         return resume.Id;
+    }
+
+    public async Task<JobMatchResult> MatchResumeWithJobAsync(Guid resumeId,string jobDescription)
+    {
+        if (string.IsNullOrWhiteSpace(jobDescription))
+        {
+            throw new ArgumentException("Job description is required.");
+        }
+
+        var resume = await _resumeRepository.GetByIdAsync(resumeId);
+
+        if (resume == null)
+        {
+            throw new Exception("Resume not found.");
+        }
+
+        var resumeText = await _pdfService.ExtractTextAsync(resume.FilePath);
+
+        var result = await _aiService.MatchResumeWithJobAsync(resumeText,jobDescription);
+
+        return result;
     }
 
 }

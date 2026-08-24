@@ -44,6 +44,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         }));
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(options =>
@@ -147,7 +148,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();  
     });
 });
 
@@ -206,5 +208,7 @@ app.UseHangfireDashboard("/hangfire");
 //});
 
 app.MapControllers();
+
+app.MapHub<ResumeAnalyzer.Application.Hubs.ResumeHub>("/hubs/resume");
 
 app.Run();

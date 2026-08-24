@@ -11,6 +11,8 @@ namespace ResumeAnalyzer.Application.Interfaces
     public interface IAIService
     {
          Task<ResumeAnalysisResult> AnalyzeResumeAsync(string resumeText);
+
+         Task<JobMatchResult> MatchResumeWithJobAsync(string resumeText,string jobDescription);
     }
 
     //Task<ResumeAnalysisResponse> AnalyzeResumeAsync(string resumeText);

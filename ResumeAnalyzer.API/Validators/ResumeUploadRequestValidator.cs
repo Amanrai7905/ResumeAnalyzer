@@ -11,13 +11,18 @@ namespace ResumeAnalyzer.API.Validators
                 .NotNull()
                 .WithMessage("Resume file is required.");
 
-            RuleFor(x => x.File.Length)
-                .LessThanOrEqualTo(5 * 1024 * 1024)
-                .WithMessage("Maximum file size is 5 MB.");
+            When(x => x.File != null, () =>
+            {
+                RuleFor(x => x.File.Length)
+                    .LessThanOrEqualTo(5 * 1024 * 1024)
+                    .WithMessage("Maximum file size is 5 MB.");
 
-            RuleFor(x => x.File.FileName)
-                .Must(name => Path.GetExtension(name).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
-                .WithMessage("Only PDF files are allowed.");
+                RuleFor(x => x.File.FileName)
+                    .Must(name =>
+                        Path.GetExtension(name)
+                            .Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                    .WithMessage("Only PDF files are allowed.");
+            });
         }
     }
 }

@@ -9,5 +9,6 @@ namespace ResumeAnalyzer.Application.Interfaces
     public interface IFileService
     {
         Task<string> SaveFileAsync(Stream stream, string fileName);
+        Task DeleteFileAsync(string filePath);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using ResumeAnalyzer.Application.Common;
+using ResumeAnalyzer.Application.DTOs.AI;
 using ResumeAnalyzer.Application.DTOs.Request;
 using ResumeAnalyzer.Application.DTOs.Response;
 using ResumeAnalyzer.Application.DTOs.Resume;
@@ -24,5 +25,7 @@ namespace ResumeAnalyzer.Application.Interfaces
         Task ProcessResumeAnalysisAsync(Guid resumeId);
 
         Task<Guid> UploadResumeAsync(Stream stream, string fileName);
+
+        Task<JobMatchResult> MatchResumeWithJobAsync(Guid resumeId,string jobDescription);
     }
 }

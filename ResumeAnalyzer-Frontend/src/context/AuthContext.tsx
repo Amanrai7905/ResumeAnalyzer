@@ -4,6 +4,7 @@ import { storage } from "../utils/storage";
 interface AuthContextType {
     isAuthenticated: boolean;
     accessToken: string | null;
+    loading: boolean;
     login: (accessToken: string, refreshToken: string) => void;
     logout: () => void;
 }
@@ -12,6 +13,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [accessToken, setAccessToken] = useState<string | null>(null);
+     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const token = storage.getAccessToken();
@@ -20,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setAccessToken(token);
         }
+        setLoading(false);
     }, []);
 
     const login = (accessToken: string, refreshToken: string) => {
@@ -39,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             value={{
                 isAuthenticated: !!accessToken,
                 accessToken,
+                loading,
                 login,
                 logout,
             }}

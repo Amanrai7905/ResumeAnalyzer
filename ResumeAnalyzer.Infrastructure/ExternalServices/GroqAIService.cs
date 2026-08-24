@@ -94,4 +94,63 @@ public class GroqAIService : IAIService
         return response;
     }
 
+
+    public async Task<JobMatchResult> MatchResumeWithJobAsync(string resumeText,string jobDescription)
+    {
+        _httpClient.BaseAddress = new Uri(_options.BaseUrl);
+
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiKey);
+
+        var request = new ChatCompletionRequest
+        {
+            model = _options.Model,
+
+            messages = new List<ChatMessage>{
+            new()
+            {
+                role = "user",
+
+                content = JobMatchPromptBuilder.Build(
+                    resumeText,
+                    jobDescription)
+            }
+            }
+        };
+
+        var response = await _httpClient.PostAsJsonAsync("chat/completions",request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error =
+                await response.Content.ReadAsStringAsync();
+
+            throw new Exception(
+                $"Status Code: {(int)response.StatusCode}\n" +
+                $"Reason: {response.ReasonPhrase}\n" +
+                $"Response: {error}");
+        }
+
+        var chatResponse = await response.Content.ReadFromJsonAsync<ChatCompletionResponse>();
+
+        if (chatResponse == null || chatResponse.choices.Count == 0)
+        {
+            throw new Exception("No response received from Groq.");
+        }
+
+        var json = CleanJsonResponse(chatResponse.choices[0].message.content);
+
+        var result = JsonSerializer.Deserialize<JobMatchResult>(json,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+        if (result == null)
+        {
+            throw new Exception("Unable to parse job match AI response.");
+        }
+
+        return result;
+    }
+
 }

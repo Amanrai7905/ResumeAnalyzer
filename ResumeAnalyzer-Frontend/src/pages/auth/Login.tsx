@@ -36,52 +36,52 @@ function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-800 text-slate-100">       
-            <div className="relative mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center px-6 py-12">
-                <div className="w-full border border-white/10 bg-white/5 p-6 shadow-2xl shadow-slate-950/40 backdrop-blur-xl lg:p-10">
-                    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
-                        <div className="rounded-[1.75rem] bg-slate-800 p-8 lg:p-10">
-                            <div className="mb-8">
+        <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.18),_transparent_40%),linear-gradient(135deg,_#020617_0%,_#0f172a_45%,_#111827_100%)] text-slate-100">
+            <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
+                <div className="w-full overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/70 p-4 shadow-2xl shadow-slate-950/50 backdrop-blur-xl sm:p-6 lg:p-8">
+                    <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8">
+                        <div className="rounded-[1.5rem] bg-slate-800/90 p-6 sm:p-8 lg:p-9">
+                            <div className="mb-6 sm:mb-8">
                                 <p className="text-sm uppercase tracking-[0.35em] text-cyan-300/80">
                                     Resume Analyzer
                                 </p>
-                                <h1 className="mt-4 text-4xl font-semibold text-white">
+                                <h1 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">
                                     Welcome back
                                 </h1>
-                                <p className="mt-4 max-w-md text-slate-400">
+                                <p className="mt-3 max-w-md text-sm leading-6 text-slate-400 sm:text-base">
                                     Log in to track candidates, review resumes, and speed up your hiring workflow.
                                 </p>
                             </div>
 
-                            <div className="space-y-4 text-slate-300">
-                                <div className="rounded-3xl border border-slate-200/70 bg-slate-100/80 p-5 text-slate-700 transition duration-300 dark:border-white/10 dark:bg-slate-900/70 dark:text-slate-300">
+                            <div className="space-y-3 text-slate-300">
+                                <div className="rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
                                     <p className="text-sm font-semibold text-cyan-300">Fast onboarding</p>
-                                    <p className="mt-2 text-sm">Get access to your recruiter dashboard immediately.</p>
+                                    <p className="mt-1 text-sm text-slate-400">Get access to your recruiter dashboard immediately.</p>
                                 </div>
-                                <div className="rounded-3xl border border-slate-200/70 bg-slate-100/80 p-5 text-slate-700 transition duration-300 dark:border-white/10 dark:bg-slate-900/70 dark:text-slate-300">
+                                <div className="rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
                                     <p className="text-sm font-semibold text-cyan-300">Secure sessions</p>
-                                    <p className="mt-2 text-sm">Your credentials are protected with safe token storage.</p>
+                                    <p className="mt-1 text-sm text-slate-400">Your credentials are protected with safe token storage.</p>
                                 </div>
-                                <div className="rounded-3xl border border-slate-200/70 bg-slate-100/80 p-5 text-slate-700 transition duration-300 dark:border-white/10 dark:bg-slate-900/70 dark:text-slate-300">
+                                <div className="rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
                                     <p className="text-sm font-semibold text-cyan-300">Clear insights</p>
-                                    <p className="mt-2 text-sm">Easily access candidate analytics and resume summaries.</p>
+                                    <p className="mt-1 text-sm text-slate-400">Easily access candidate analytics and resume summaries.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="rounded-[1.75rem] bg-slate-800 p-8 shadow-slate-950/10 lg:p-10">
-                            <div className="mb-6 flex items-center justify-between gap-4">
+                        <div className="rounded-[1.5rem] bg-slate-800/90 p-6 shadow-slate-950/10 sm:p-8 lg:p-9">
+                            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p className="text-sm uppercase tracking-[0.35em] text-cyan-300/80">
                                         Sign in
                                     </p>
-                                    <h2 className="mt-2 text-3xl font-semibold text-white">
-                                        Clean login form
+                                    <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
+                                        Welcome back
                                     </h2>
                                 </div>
                                 <Link
                                     to="/register"
-                                    className="rounded-2xl border border-cyan-300/20 bg-slate-900/80 px-4 py-2 text-sm text-cyan-200 transition hover:bg-cyan-500/10"
+                                    className="rounded-2xl border border-cyan-400/20 bg-slate-900/80 px-4 py-2 text-sm font-medium text-cyan-200 transition hover:bg-cyan-500/10"
                                 >
                                     Create account
                                 </Link>
@@ -95,13 +95,13 @@ function Login() {
 
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                                 <div>
-                                    <label className="mb-3 block text-sm font-medium text-slate-300">
+                                    <label className="mb-2.5 block text-sm font-medium text-slate-300">
                                         Email address
                                     </label>
                                     <input
                                         type="email"
                                         {...register("email")}
-                                        className="w-full rounded-3xl border border-slate-700/80 bg-slate-950/85 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
+                                        className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/85 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
                                         placeholder="name@company.com"
                                     />
                                     {errors.email?.message && (
@@ -112,13 +112,13 @@ function Login() {
                                 </div>
 
                                 <div>
-                                    <label className="mb-3 block text-sm font-medium text-slate-300">
+                                    <label className="mb-2.5 block text-sm font-medium text-slate-300">
                                         Password
                                     </label>
                                     <input
                                         type="password"
                                         {...register("password")}
-                                        className="w-full rounded-3xl border border-slate-700/80 bg-slate-950/85 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
+                                        className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/85 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
                                         placeholder="Enter your password"
                                     />
                                     {errors.password?.message && (
@@ -141,7 +141,7 @@ function Login() {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex w-full items-center justify-center rounded-3xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="flex w-full items-center justify-center rounded-2xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isSubmitting ? "Signing in..." : "Sign In"}
                                 </button>

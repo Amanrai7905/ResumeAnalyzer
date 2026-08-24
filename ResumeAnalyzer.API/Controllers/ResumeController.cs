@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ResumeAnalyzer.Application.DTOs;
+using ResumeAnalyzer.Application.DTOs.JobMatching;
 using ResumeAnalyzer.Application.DTOs.Resume;
 using ResumeAnalyzer.Application.Interfaces;
 using System.IO;
@@ -53,7 +54,7 @@ namespace ResumeAnalyzer.API.Controllers
             return Ok(resume);
         }
 
-        [HttpGet("GetResumeById{id}")]
+        [HttpGet("GetResumeById/{id}")]
         public async Task<IActionResult> GetResume(Guid id)
         {
             var result = await _resumeService.GetResumeByIdAsync(id);
@@ -64,7 +65,7 @@ namespace ResumeAnalyzer.API.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("Delete{id}")]
+        [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _resumeService.DeleteAsync(id);
@@ -78,6 +79,14 @@ namespace ResumeAnalyzer.API.Controllers
             var resumes = await _resumeService.GetPagedAsync(query);
 
             return Ok(resumes);
+        }
+
+        [HttpPost("MatchJob")]
+        public async Task<IActionResult> MatchJob([FromBody] JobMatchRequest request)
+        {
+            var result = await _resumeService.MatchResumeWithJobAsync(request.ResumeId,request.JobDescription);
+
+            return Ok(result);
         }
 
     }

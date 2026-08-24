@@ -29,6 +29,17 @@ namespace ResumeAnalyzer.Infrastructure.ExternalServices
             return filePath;
         }
 
+        public async Task DeleteFileAsync(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+                return;
+
+            if (File.Exists(filePath))
+            {
+                await Task.Run(() => File.Delete(filePath));
+            }
+        }
+
 
     }
 }
