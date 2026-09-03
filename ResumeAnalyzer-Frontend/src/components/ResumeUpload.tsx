@@ -1,21 +1,40 @@
-import { useRef, useState } from "react";
+import {useCallback,useEffect,useRef,useState,} from "react";
 import api from "../api/axios";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useUpload } from "../context/UploadContext";
+import LoginRequiredModal from "./LoginRequiredModal";
 
 interface ResumeUploadProps {
   onUploadSuccess: () => void;
 }
 
-export default function ResumeUpload({onUploadSuccess,}:ResumeUploadProps) {
+export default function ResumeUpload({onUploadSuccess,}: ResumeUploadProps) {
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const navigate = useNavigate();
+
+  const { isAuthenticated } = useAuth();
+
+  const {
+    pendingFile,
+    setPendingFile,
+    shouldAutoUpload,
+    setShouldAutoUpload,
+  } = useUpload();
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
+  // After login, use pending file from UploadContext.
+  const currentFile = selectedFile || (isAuthenticated ? pendingFile : null);
+
+  const handleFileChange = ( event: React.ChangeEvent<HTMLInputElement> ) => {
+
+     const file = event.target.files?.[0];
 
     if (!file) {
       return;
@@ -34,74 +53,101 @@ export default function ResumeUpload({onUploadSuccess,}:ResumeUploadProps) {
     fileInputRef.current?.click();
   };
 
+  const uploadResume = useCallback(
+    async (file: File) => {
+      try {
+        setUploading(true);
+        setMessage("");
+        const formData = new FormData();
+        formData.append("File", file);
+        const response = await api.post(
+          "/Resume/upload",
+          formData
+        );
+
+        console.log("Upload response:",response.data);
+
+        setMessage( response.data.message ||"Resume uploaded successfully.");
+
+        onUploadSuccess();
+        navigate("/resumes");
+
+        setSelectedFile(null);
+        setPendingFile(null);
+        setShouldAutoUpload(false);
+
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+
+      } 
+      catch (error: unknown) {
+        console.error("Resume upload failed:",error);
+
+        if (typeof error === "object" && error !== null && "response" in error) {
+          
+          const axiosError = error as {
+            response?: {
+              status?: number;
+              data?: {
+                errors?: unknown;
+              };
+            };
+          };
+
+          console.log( "Status:",axiosError.response?.status);
+
+          console.log( "Validation errors:",
+            JSON.stringify(axiosError.response?.data?.errors,null,2)
+          );
+        }
+
+        setMessage("Resume upload failed. Please try again.");
+
+      } 
+      finally {
+        setUploading(false);
+      }
+    },
+    [navigate, onUploadSuccess, setPendingFile, setShouldAutoUpload]
+  );
+
   const handleUpload = async () => {
-    if (!selectedFile) {
+    if (!currentFile) {
       alert("Please select a resume first.");
       return;
     }
 
-    try {
-      setUploading(true);
-      setMessage("");
-
-      const formData = new FormData();
-
-      formData.append("File", selectedFile);
-
-      const response = await api.post(
-        "/Resume/upload",
-        formData
-      );
-
-      console.log("Upload response:", response.data);
-
-
-      setMessage(
-        response.data.message ||
-          "Resume uploaded successfully."
-      );
-       onUploadSuccess();
-       
-      setSelectedFile(null);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (error: unknown) {
-      console.error("Resume upload failed:", error);
-
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "response" in error
-      ) {
-        const axiosError = error as {
-          response?: {
-            status?: number;
-            data?: { errors?: unknown };
-          };
-        };
-
-        console.log("Status:", axiosError.response?.status);
-
-        console.log(
-          "Validation errors:",
-          JSON.stringify(
-            axiosError.response?.data?.errors,
-            null,
-            2
-          )
-        );
-      }
-
-      setMessage("Resume upload failed. Please try again.");
-    } finally {
-      setUploading(false);
+    // User is not logged in
+    if (!isAuthenticated) {
+      setPendingFile(currentFile);
+      setShouldAutoUpload(true);
+      setShowLoginModal(true);
+      return;
     }
+
+    await uploadResume(currentFile);
   };
+
+
+  // ===============================
+  // AUTO UPLOAD AFTER LOGIN
+  // ===============================
+
+  useEffect(() => {
+    if ( isAuthenticated && pendingFile && shouldAutoUpload && !uploading) {
+      setShouldAutoUpload(false);
+
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      void uploadResume(pendingFile);
+    }
+  }, [isAuthenticated, pendingFile, shouldAutoUpload,uploading,uploadResume,setShouldAutoUpload,]);
+
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+
+      {/* HEADER */}
 
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -113,10 +159,14 @@ export default function ResumeUpload({onUploadSuccess,}:ResumeUploadProps) {
         </p>
       </div>
 
+
+      {/* UPLOAD AREA */}
+
       <div
         onClick={handleChooseFile}
         className="cursor-pointer rounded-xl border-2 border-dashed border-slate-300 p-10 text-center transition hover:border-cyan-400 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-cyan-500 dark:hover:bg-slate-900"
       >
+
         <div className="text-4xl">
           📄
         </div>
@@ -147,20 +197,27 @@ export default function ResumeUpload({onUploadSuccess,}:ResumeUploadProps) {
           onChange={handleFileChange}
           className="hidden"
         />
+
       </div>
 
-      {selectedFile && (
+
+      {/* SELECTED FILE */}
+
+      {currentFile && (
         <div className="mt-5 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
 
           <div className="min-w-0">
+
             <p className="text-sm font-medium text-slate-900 dark:text-white">
-              {selectedFile.name}
+              {currentFile.name}
             </p>
 
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+              {(currentFile.size / 1024 / 1024).toFixed(2)} MB
             </p>
+
           </div>
+
 
           <button
             type="button"
@@ -168,17 +225,49 @@ export default function ResumeUpload({onUploadSuccess,}:ResumeUploadProps) {
             disabled={uploading}
             className="ml-4 shrink-0 rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {uploading ? "Uploading..." : "Upload"}
+            {uploading
+              ? "Uploading..."
+              : "Upload"}
           </button>
 
         </div>
       )}
+
+
+      {/* MESSAGE */}
 
       {message && (
         <div className="mt-4 rounded-lg bg-slate-100 p-4 text-sm text-slate-700 dark:bg-slate-900 dark:text-slate-300">
           {message}
         </div>
       )}
+
+
+      {/* LOGIN REQUIRED MODAL */}
+
+      <LoginRequiredModal
+        isOpen={showLoginModal}
+        onClose={() =>
+          setShowLoginModal(false)
+        }
+        onLogin={() => {
+          setShowLoginModal(false);
+
+          navigate("/login", {
+            state: {
+              from: {
+                pathname: "/",
+              },
+            },
+          });
+        }}
+        onRegister={() => {
+          setShowLoginModal(false);
+
+          navigate("/register");
+        }}
+      />
+
     </div>
   );
 }

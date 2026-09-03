@@ -66,21 +66,6 @@ public class ResumeService : IResumeService
         };
     }
 
-    //public async Task<List<ResumeDto>> GetAllAsync()
-    //{
-    //    var resumes = await _resumeRepository.GetAllAsync();
-
-    //    return resumes.Select(r => new ResumeDto
-    //    {
-    //        Id = r.Id,
-    //        FileName = r.FileName,
-    //        ResumeScore = r.ResumeScore,
-    //        AtsScore = r.AtsScore,
-    //        Summary = r.Summary,
-    //        UploadedAt = r.UploadedAt
-    //    }).ToList();
-    //}
-
     public async Task<List<ResumeDto>> GetAllAsync()
     {
         const string cacheKey = "all_resumes";
@@ -150,17 +135,6 @@ public class ResumeService : IResumeService
         };
     }
 
-    //public async Task DeleteAsync(Guid id)
-    //{
-    //    var resume = await _resumeRepository.GetByIdAsync(id);
-
-    //    if (resume == null)
-    //        throw new Exception("Resume not found.");
-
-    //    await _resumeRepository.DeleteAsync(resume);
-    //    await _cacheService.RemoveAsync("all_resumes");
-    //}
-
     public async Task DeleteAsync(Guid id)
     {
         var resume = await _resumeRepository.GetByIdAsync(id);
@@ -177,7 +151,6 @@ public class ResumeService : IResumeService
         // Remove Redis cache
         await _cacheService.RemoveAsync("all_resumes");
     }
-
 
     public async Task<PagedResponse<ResumeDto>> GetPagedAsync(ResumeQueryParameters query)
     {

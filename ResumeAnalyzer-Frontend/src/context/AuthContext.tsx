@@ -1,12 +1,13 @@
 import { createContext,useContext,useEffect,useState, type ReactNode} from "react";
 import { storage } from "../utils/storage";
+import api from "../api/axios";
 
 interface AuthContextType {
     isAuthenticated: boolean;
     accessToken: string | null;
     loading: boolean;
     login: (accessToken: string, refreshToken: string) => void;
-    logout: () => void;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,10 +33,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAccessToken(accessToken);
     };
 
-    const logout = () => {
-        storage.clear();
-        setAccessToken(null);
-    };
+     const logout = async () => {
+    const refreshToken = storage.getRefreshToken();
+
+    try {
+      if (refreshToken) {
+        await api.post("/Auth/logout", {
+          refreshToken: refreshToken,
+        });
+      }
+    } catch (error) {
+      console.error("Logout API failed:", error);
+    } finally {
+      storage.clear();
+      setAccessToken(null);
+    }
+  };
 
     return (
         <AuthContext.Provider

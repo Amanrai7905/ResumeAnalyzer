@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate,useLocation } from "react-router-dom";
 import { loginUser } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 import {loginSchema,type LoginFormData,} from "../../validations/authValidation";
 
 function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || "/";
     const { login } = useAuth();
     const [authError, setAuthError] = useState<string | null>(null);
 
@@ -24,11 +26,9 @@ function Login() {
 
         try {
             const response = await loginUser(data);
-            login(
-            response.accessToken,
-            response.refreshToken
-            );
-            navigate("/dashboard");
+            login(response.accessToken,response.refreshToken);
+            navigate("/dashboard", { replace: true });
+            //navigate(from, { replace: true });
         } catch (error) {
             console.error(error);
             setAuthError("Invalid email or password. Please try again.");
