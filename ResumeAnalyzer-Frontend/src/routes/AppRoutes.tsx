@@ -6,6 +6,8 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 
 import DashboardHome from "../pages/dashboard/DashboardHome";
+import SettingsPage from "../pages/dashboard/SettingsPage";
+import ProfilePage from "../pages/dashboard/ProfilePage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -50,6 +52,16 @@ function AppRoutes() {
                     <Route
                         path="/dashboard"
                         element={<DashboardHome />}
+                    />
+
+                    <Route
+                        path="/dashboard/settings"
+                        element={<SettingsPage />}
+                    />
+
+                    <Route
+                        path="/dashboard/profile"
+                        element={<ProfilePage />}
                     />
 
                     <Route

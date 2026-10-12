@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import {useCallback,useEffect,useRef,useState,} from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
@@ -17,12 +18,7 @@ export default function ResumeUpload({onUploadSuccess,}: ResumeUploadProps) {
 
   const { isAuthenticated } = useAuth();
 
-  const {
-    pendingFile,
-    setPendingFile,
-    shouldAutoUpload,
-    setShouldAutoUpload,
-  } = useUpload();
+  const {pendingFile,setPendingFile,shouldAutoUpload,setShouldAutoUpload,} = useUpload();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -34,7 +30,7 @@ export default function ResumeUpload({onUploadSuccess,}: ResumeUploadProps) {
 
   const handleFileChange = ( event: React.ChangeEvent<HTMLInputElement> ) => {
 
-     const file = event.target.files?.[0];
+    const file = event.target.files?.[0];
 
     if (!file) {
       return;
@@ -60,10 +56,7 @@ export default function ResumeUpload({onUploadSuccess,}: ResumeUploadProps) {
         setMessage("");
         const formData = new FormData();
         formData.append("File", file);
-        const response = await api.post(
-          "/Resume/upload",
-          formData
-        );
+        const response = await api.post("/Resume/upload",formData);
 
         console.log("Upload response:",response.data);
 
@@ -137,8 +130,6 @@ export default function ResumeUpload({onUploadSuccess,}: ResumeUploadProps) {
   useEffect(() => {
     if ( isAuthenticated && pendingFile && shouldAutoUpload && !uploading) {
       setShouldAutoUpload(false);
-
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       void uploadResume(pendingFile);
     }
   }, [isAuthenticated, pendingFile, shouldAutoUpload,uploading,uploadResume,setShouldAutoUpload,]);
@@ -263,7 +254,6 @@ export default function ResumeUpload({onUploadSuccess,}: ResumeUploadProps) {
         }}
         onRegister={() => {
           setShowLoginModal(false);
-
           navigate("/register");
         }}
       />

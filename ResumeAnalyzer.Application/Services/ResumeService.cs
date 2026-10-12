@@ -189,7 +189,7 @@ public class ResumeService : IResumeService
 
         var resumeText = await _pdfService.ExtractTextAsync(resume.FilePath);
 
-        var aiResult = await _aiService.AnalyzeResumeAsync(resumeText);
+        var aiResult = await _aiService.AnalyzeResumeAsync (resumeText);
 
         // Check again because the user may have deleted
         // the resume while AI analysis was running.

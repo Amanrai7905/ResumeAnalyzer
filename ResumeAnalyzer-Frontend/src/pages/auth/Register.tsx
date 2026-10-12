@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import {
     registerSchema,
@@ -9,115 +10,163 @@ import {
 import { Userregister } from "../../services/authService";
 
 function Register() {
+    const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
 
     const {
         register,
         handleSubmit,
-        formState: { errors },
+        formState: { errors, isSubmitting },
     } = useForm<RegisterFormData>({
         resolver: zodResolver(registerSchema),
     });
 
-const navigate = useNavigate();
+    const onSubmit = async (data: RegisterFormData) => {
+        try {
+            const response = await Userregister(data);
+            alert(response.message);
+            navigate("/login");
+        } catch (error) {
+            console.error(error);
+            alert("Registration failed");
+        }
+    };
 
-const onSubmit = async (data: RegisterFormData) => {
-
-    try {
-
-        const response = await Userregister(data);
-
-        alert(response.message);
-
-        navigate("/");
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert("Registration failed");
-
-    }
-
-};
     return (
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.16),_transparent_35%),linear-gradient(135deg,_#020617_0%,_#0f172a_45%,_#111827_100%)] text-slate-100">
-            <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
-                <div className="grid w-full gap-6 overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/70 p-4 shadow-2xl shadow-slate-950/50 backdrop-blur-xl sm:p-6 lg:grid-cols-[1.05fr_0.95fr] lg:p-8">
-                    <div className="rounded-[1.5rem] bg-slate-800/90 p-6 text-white sm:p-8 lg:p-9">
-                        <p className="text-sm uppercase tracking-[0.35em] text-cyan-300/80">Resume Analyzer</p>
-                        <h1 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Create your account</h1>
-                        <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
-                            Join Resume Analyzer to start reviewing resumes, tracking applicants, and managing your hiring process from one dashboard.
-                        </p>
+        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 p-4">
+            <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-xl">
+                {/* Header with Logo */}
+                <div className="border-b border-slate-200 p-6 text-center">
+                    <div className="text-2xl font-bold">
+                        Resume<span className="text-cyan-400">Analyzer</span>
+                    </div>
+                </div>
 
-                        <div className="mt-6 grid gap-3 text-slate-300 sm:grid-cols-2">
-                            <div className="rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
-                                <p className="text-sm font-semibold text-cyan-300">Fast setup</p>
-                                <p className="mt-1 text-sm text-slate-400">Register quickly with a clean sign up experience.</p>
-                            </div>
-                            <div className="rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
-                                <p className="text-sm font-semibold text-cyan-300">Secure access</p>
-                                <p className="mt-1 text-sm text-slate-400">Your account stays protected with secure authentication.</p>
-                            </div>
-                        </div>
+                {/* Tabs */}
+                <div className="flex border-b border-slate-200">
+                    <Link
+                        to="/login"
+                        className="flex-1 px-4 py-3 text-center font-semibold text-slate-500 transition hover:text-slate-700"
+                    >
+                        Login
+                    </Link>
+                    <button className="flex-1 border-b-2 border-blue-600 px-4 py-3 text-center font-semibold text-blue-600 transition">
+                        Register
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-6">
+                    {/* Google Signup Button */}
+                    <button className="w-full rounded-lg border border-slate-300 px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50 flex items-center justify-center gap-2">
+                        <svg className="h-5 w-5" viewBox="0 0 24 24">
+                            <image
+                                href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext x='0' y='16' font-size='20' font-weight='bold'%3EG%3C/text%3E%3C/svg%3E"
+                                width="20"
+                                height="20"
+                            />
+                        </svg>
+                        Sign up With Google
+                    </button>
+
+                    {/* Divider */}
+                    <div className="my-4 flex items-center gap-4">
+                        <div className="flex-1 border-t border-slate-200"></div>
+                        <span className="text-sm text-slate-500">OR</span>
+                        <div className="flex-1 border-t border-slate-200"></div>
                     </div>
 
-                    <div className="rounded-[1.5rem] bg-slate-800/90 p-6 shadow-slate-950/10 sm:p-8 lg:p-9">
-                        <div className="mb-5">
-                            <p className="text-sm uppercase tracking-[0.35em] text-cyan-300/80">Welcome</p>
-                            <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Register your team</h2>
-                            <p className="mt-2 text-sm text-slate-400">Create an account and start analyzing resumes right away.</p>
+                    {/* Form */}
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        {/* Full Name */}
+                        <div>
+                            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Full Name<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                {...register("fullName")}
+                                placeholder="Jane Doe"
+                                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            />
+                            {errors.fullName?.message && (
+                                <p className="mt-1.5 text-sm text-red-600">{errors.fullName.message}</p>
+                            )}
                         </div>
 
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-slate-300">Full Name</label>
-                                <input
-                                    {...register("fullName")}
-                                    placeholder="Jane Doe"
-                                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/85 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
-                                />
-                                {errors.fullName?.message && (
-                                    <p className="mt-2 text-sm text-rose-400">{errors.fullName.message}</p>
-                                )}
-                            </div>
+                        {/* Email */}
+                        <div>
+                            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Email<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                {...register("email")}
+                                placeholder="example@email.com"
+                                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            />
+                            {errors.email?.message && (
+                                <p className="mt-1.5 text-sm text-red-600">{errors.email.message}</p>
+                            )}
+                        </div>
 
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-slate-300">Email</label>
+                        {/* Password */}
+                        <div>
+                            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Password<span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative">
                                 <input
-                                    {...register("email")}
-                                    placeholder="name@company.com"
-                                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/85 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
-                                />
-                                {errors.email?.message && (
-                                    <p className="mt-2 text-sm text-rose-400">{errors.email.message}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-slate-300">Password</label>
-                                <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     {...register("password")}
                                     placeholder="Create a password"
-                                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/85 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
+                                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 pr-10 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                                 />
-                                {errors.password?.message && (
-                                    <p className="mt-2 text-sm text-rose-400">{errors.password.message}</p>
-                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                                >
+                                    {showPassword ? "🙈" : "👁️"}
+                                </button>
                             </div>
+                            {errors.password?.message && (
+                                <p className="mt-1.5 text-sm text-red-600">{errors.password.message}</p>
+                            )}
+                        </div>
 
-                            <button
-                                type="submit"
-                                className="flex w-full items-center justify-center rounded-2xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
-                            >
-                                Register
-                            </button>
-                        </form>
-                        <p className="mt-5 text-center text-sm text-slate-400">
-                            Already have an account? <span className="font-semibold text-cyan-300">Login now</span>
-                        </p>
-                    </div>
+                        {/* Terms & Conditions */}
+                        <div className="flex items-start gap-2">
+                            <input
+                                type="checkbox"
+                                id="terms"
+                                className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600"
+                            />
+                            <label htmlFor="terms" className="text-sm text-slate-600">
+                                I agree to the{" "}
+                                <Link to="#" className="font-semibold text-blue-600 hover:text-blue-700">
+                                    Terms & Conditions
+                                </Link>
+                            </label>
+                        </div>
+
+                        {/* Register Button */}
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {isSubmitting ? "Creating account..." : "Register"}
+                        </button>
+                    </form>
+
+                    {/* Login Link */}
+                    <p className="mt-4 text-center text-sm text-slate-600">
+                        Already have an account?{" "}
+                        <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700">
+                            Login here
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>
