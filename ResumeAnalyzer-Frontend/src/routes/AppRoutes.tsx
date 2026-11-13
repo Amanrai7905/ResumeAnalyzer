@@ -6,6 +6,7 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 
 import DashboardHome from "../pages/dashboard/DashboardHome";
+import AnalyticsPage from "../pages/dashboard/AnalyticsPage";
 import SettingsPage from "../pages/dashboard/SettingsPage";
 import ProfilePage from "../pages/dashboard/ProfilePage";
 
@@ -52,6 +53,11 @@ function AppRoutes() {
                     <Route
                         path="/dashboard"
                         element={<DashboardHome />}
+                    />
+
+                    <Route
+                        path="/dashboard/analytics"
+                        element={<AnalyticsPage />}
                     />
 
                     <Route

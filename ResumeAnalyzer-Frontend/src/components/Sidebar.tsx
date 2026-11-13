@@ -1,4 +1,17 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+    FiBarChart2,
+    FiChevronLeft,
+    FiChevronRight,
+    FiFileText,
+    FiGrid,
+    FiLogOut,
+    FiSettings,
+    FiUser,
+    FiZap,
+    FiX,
+} from "react-icons/fi";
+import type { IconType } from "react-icons";
 import { useAuth } from "../context/AuthContext";
 
 interface SidebarProps {
@@ -8,8 +21,27 @@ interface SidebarProps {
     onNavigate?: () => void;
 }
 
-export default function Sidebar({collapsed,setCollapsed,onClose,onNavigate,}: SidebarProps) {
+const menuItems: {
+    name: string;
+    path: string;
+    icon: IconType;
+    iconColor: string;
+    iconBackground: string;
+}[] = [
+    { name: "Dashboard", path: "/dashboard", icon: FiGrid, iconColor: "text-violet-600 dark:text-violet-300", iconBackground: "bg-violet-100 dark:bg-violet-950/60" },
+    { name: "My Resumes", path: "/resumes", icon: FiFileText, iconColor: "text-blue-600 dark:text-blue-300", iconBackground: "bg-blue-100 dark:bg-blue-950/60" },
+    { name: "AI Analysis", path: "/dashboard#analysis", icon: FiZap, iconColor: "text-amber-600 dark:text-amber-300", iconBackground: "bg-amber-100 dark:bg-amber-950/60" },
+    { name: "Analytics", path: "/dashboard/analytics", icon: FiBarChart2, iconColor: "text-emerald-600 dark:text-emerald-300", iconBackground: "bg-emerald-100 dark:bg-emerald-950/60" },
+    { name: "Settings", path: "/dashboard/settings", icon: FiSettings, iconColor: "text-slate-600 dark:text-slate-300", iconBackground: "bg-slate-100 dark:bg-slate-800" },
+    { name: "Profile", path: "/dashboard/profile", icon: FiUser, iconColor: "text-pink-600 dark:text-pink-300", iconBackground: "bg-pink-100 dark:bg-pink-950/60" },
+];
 
+export default function Sidebar({
+    collapsed,
+    setCollapsed,
+    onClose,
+    onNavigate,
+}: SidebarProps) {
     const navigate = useNavigate();
     const location = useLocation();
     const { logout } = useAuth();
@@ -19,79 +51,18 @@ export default function Sidebar({collapsed,setCollapsed,onClose,onNavigate,}: Si
         navigate("/", { replace: true });
     };
 
-    const menuItems = [
-        {
-            name: "Dashboard",
-            path: "/dashboard",
-            icon: "⌂",
-        },
-        {
-            name: "My Resumes",
-            path: "/resumes",
-            icon: "▤",
-        },
-        {
-            name: "AI Analysis",
-            path: "/dashboard#analysis",
-            icon: "✦",
-        },
-        {
-            name: "Analytics",
-            path: "/dashboard#analytics",
-            icon: "◒",
-        },
-        {
-            name: "AI Career Assistant",
-            path: "/dashboard#assistant",
-            icon: "◌",
-        },
-        {
-            name: "Settings",
-            path: "/dashboard/settings",
-            icon: "⚙",
-        },
-        {
-            name: "Profile",
-            path: "/dashboard/profile",
-            icon: "◉",
-        },
-    ];
-
     return (
         <aside
-            className={`flex h-full flex-col border-r border-slate-200 bg-white transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 ${
-                collapsed ? "w-16 sm:w-20" : "w-64 sm:w-72"
+            className={`flex h-full flex-col border-r border-slate-200 bg-white transition-[width] duration-300 dark:border-slate-800 dark:bg-slate-950 ${
+                collapsed ? "w-20" : "w-64 lg:w-72"
             }`}
         >
-
-            {/* Sidebar Header */}
-            <div
-                className={`flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 ${
-                    collapsed
-                        ? "justify-center px-3 py-4 sm:px-4"
-                        : "justify-between px-4 py-5 sm:px-6"
-                }`}
-            >
-
+            <div className={`flex h-14 shrink-0 items-center ${collapsed ? "justify-center px-2" : "justify-between px-4"}`}>
                 {!collapsed && (
-                    <div className="min-w-0">
-                        <div className="flex items-center gap-3">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-500 text-lg font-bold text-white shadow-lg shadow-cyan-500/20">
-                                R
-                            </span>
-                            <div>
-                                <h2 className="text-base font-bold tracking-tight text-slate-950 dark:text-white sm:text-lg">
-                                    Resume<span className="text-cyan-500">AI</span>
-                                </h2>
-                                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
-                                    Career workspace
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
+                        Workspace
+                    </span>
                 )}
-
-                {/* Collapse Button */}
                 <button
                     type="button"
                     onClick={() => {
@@ -99,112 +70,78 @@ export default function Sidebar({collapsed,setCollapsed,onClose,onNavigate,}: Si
                             onClose();
                             return;
                         }
-
                         setCollapsed(!collapsed);
                     }}
-                    className="shrink-0 rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-                    title={
-                        collapsed
-                            ? "Expand sidebar"
-                            : "Collapse sidebar"
-                    }
+                    aria-label={onClose ? "Close navigation menu" : collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    title={onClose ? "Close navigation menu" : collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                 >
-                    {collapsed ? ">" : "<"}
+                    {onClose ? (
+                        <FiX size={18} />
+                    ) : collapsed ? (
+                        <FiChevronRight size={18} />
+                    ) : (
+                        <FiChevronLeft size={18} />
+                    )}
                 </button>
-
             </div>
 
+            <nav aria-label="Dashboard navigation" className="flex-1 space-y-1 overflow-y-auto px-3 pb-4">
+                {menuItems.map((item) => {
+                    const ItemIcon = item.icon;
+                    const isHashLink = item.path.includes("#");
+                    const isActive = isHashLink
+                        ? `${location.pathname}${location.hash}` === item.path
+                        : item.path === "/dashboard"
+                          ? location.pathname === item.path && !location.hash
+                          : location.pathname === item.path;
 
-            {/* Menu */}
-            <nav className="flex-1 overflow-y-auto px-2 py-4 sm:px-3">
-
-                {!collapsed && (
-                    <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-                        Workspace
-                    </p>
-                )}
-
-                <div className="space-y-1">
-
-                    {menuItems.map((item) => (
-
-                        <NavLink
+                    return (
+                        <Link
                             key={item.path}
                             to={item.path}
                             onClick={onNavigate}
-                            title={
-                                collapsed
-                                    ? item.name
-                                    : undefined
-                            }
-                            className={({ isActive }) => {
-                                const hashActive = item.path.includes("#")
-                                    ? `${location.pathname}${location.hash}` === item.path
-                                    : isActive;
-
-                                return `group flex items-center rounded-xl transition duration-200 ${
-                                    collapsed
-                                        ? "justify-center px-3 py-3"
-                                        : "gap-3 px-3 py-2.5"
-                                } ${
-                                    hashActive
-                                        ? "bg-slate-950 text-white shadow-lg shadow-slate-900/10 dark:bg-cyan-500 dark:text-slate-950 dark:shadow-cyan-500/20"
-                                        : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"
-                                }`;
-                            }}
+                            title={collapsed ? item.name : undefined}
+                            aria-current={isActive ? "page" : undefined}
+                            className={`group flex min-h-11 items-center rounded-xl text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 ${
+                                collapsed ? "justify-center px-2" : "gap-3 px-3"
+                            } ${
+                                isActive
+                                    ? "bg-cyan-50 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-200"
+                                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+                            }`}
                         >
-
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-base text-slate-500 transition group-hover:bg-white dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-slate-700">
-                                {item.icon}
+                            <span
+                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-105 ${item.iconBackground}`}
+                            >
+                                <ItemIcon
+                                    size={18}
+                                    strokeWidth={isActive ? 2.2 : 1.8}
+                                    className={item.iconColor}
+                                    aria-hidden="true"
+                                />
                             </span>
-
-                            {!collapsed && (
-                                <span className="text-sm font-medium">
-                                    {item.name}
-                                </span>
-                            )}
-
-                        </NavLink>
-
-                    ))}
-
-                </div>
-
+                            {!collapsed && <span className="truncate">{item.name}</span>}
+                        </Link>
+                    );
+                })}
             </nav>
 
-
-            {/* Logout */}
-            <div className="border-t border-slate-200 px-2 py-3 dark:border-slate-800 sm:px-3">
-
+            <div className="shrink-0 border-t border-slate-200 p-3 dark:border-slate-800">
                 <button
                     type="button"
                     onClick={handleLogout}
-                    title={
-                        collapsed
-                            ? "Logout"
-                            : undefined
-                    }
-                    className={`flex w-full items-center rounded-xl py-3 text-sm font-medium text-slate-500 transition duration-200 hover:bg-slate-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-red-400 ${
-                        collapsed
-                            ? "justify-center px-3"
-                            : "gap-3 px-4"
+                    title={collapsed ? "Log out" : undefined}
+                    className={`flex min-h-11 w-full items-center rounded-xl text-sm font-medium text-slate-500 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 dark:text-slate-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 ${
+                        collapsed ? "justify-center px-2" : "gap-3 px-3"
                     }`}
                 >
-
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-base dark:bg-slate-800">
-                        ↪
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600 transition-colors dark:bg-rose-950/60 dark:text-rose-300">
+                        <FiLogOut size={18} aria-hidden="true" />
                     </span>
-
-                    {!collapsed && (
-                        <span>
-                            Logout
-                        </span>
-                    )}
-
+                    {!collapsed && <span>Log out</span>}
                 </button>
-
             </div>
-
         </aside>
     );
 }
