@@ -160,6 +160,7 @@ public class ResumeService : IResumeService
         {
             Id = r.Id,
             FileName = r.FileName,
+            Status = r.Status,
             ResumeScore = r.ResumeScore,
             AtsScore = r.AtsScore,
             Summary = r.Summary,

@@ -78,24 +78,24 @@ export default function DashboardLayout() {
                     <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
                 </div>
 
-                <div
-                    className={`fixed bottom-0 left-0 top-16 z-50 h-[calc(100vh-4rem)] w-[min(18rem,85vw)] transform transition-transform duration-300 ease-out sm:hidden ${
-                        mobileOpen ? "translate-x-0" : "-translate-x-full"
-                    }`}
-                >
-                    <Sidebar
-                        collapsed={false}
-                        setCollapsed={setCollapsed}
-                        onClose={() => setMobileOpen(false)}
-                        onNavigate={() => setMobileOpen(false)}
-                    />
-                </div>
-
                 <main className="min-w-0 flex-1 overflow-y-auto scroll-smooth">
                     <div className="p-4 sm:p-6 lg:p-8">
                         <Outlet />
                     </div>
                 </main>
+            </div>
+
+            <div
+                className={`fixed bottom-0 left-0 top-16 z-50 h-[calc(100vh-4rem)] w-[min(18rem,85vw)] transform transition-transform duration-300 ease-out sm:hidden ${
+                    mobileOpen ? "translate-x-0" : "-translate-x-full"
+                }`}
+            >
+                <Sidebar
+                    collapsed={false}
+                    setCollapsed={setCollapsed}
+                    onClose={() => setMobileOpen(false)}
+                    onNavigate={() => setMobileOpen(false)}
+                />
             </div>
         </div>
     );

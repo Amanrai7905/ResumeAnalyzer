@@ -25,7 +25,7 @@ const getStatusClasses = (status: string) => {
     case "failed":
       return "bg-red-100 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-900";
     default:
-      return "bg-sky-100 text-sky-700 ring-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:ring-sky-900";
+      return "bg-cyan-100 text-cyan-700 ring-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:ring-cyan-900";
   }
 };
 
@@ -67,9 +67,9 @@ export default function ResumeDetails() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
-        <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-          <p className="text-slate-600 dark:text-slate-300">
+      <div className="flex min-h-[420px] items-center justify-center px-4">
+        <div className="rounded-2xl border border-slate-200 bg-white/90 px-6 py-5 shadow-sm ring-1 ring-slate-100 dark:border-slate-800 dark:bg-slate-950/80">
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
             Loading resume analysis...
           </p>
         </div>
@@ -79,7 +79,7 @@ export default function ResumeDetails() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600 shadow-sm dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 shadow-sm dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
         {error}
       </div>
     );
@@ -87,47 +87,55 @@ export default function ResumeDetails() {
 
   if (!resume) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
         Resume not found.
       </div>
     );
   }
 
+  const scoreCards = [
+    {
+      label: "Resume Score",
+      value: resume.resumeScore ?? 0,
+      color: getScoreTone(resume.resumeScore ?? 0),
+    },
+    {
+      label: "ATS Score",
+      value: resume.atsScore ?? 0,
+      color: getScoreTone(resume.atsScore ?? 0),
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 px-4 py-6 dark:bg-slate-950 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
-        <header className="rounded-3xl border border-slate-200 bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-900 p-6 text-white shadow-xl dark:border-slate-700">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
+        <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <button
                 type="button"
-                onClick={() => navigate("/dashboard")}
-                className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-sm font-medium text-slate-100 transition hover:bg-white/10"
+                onClick={() => navigate("/resumes")}
+                className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-cyan-700 transition hover:text-cyan-900 dark:text-cyan-300 dark:hover:text-cyan-200"
               >
-                ← Back to dashboard
+                ← Back to resumes
               </button>
 
-              <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">
-                Resume insights
-              </p>
-              <h1 className="mt-2 text-3xl font-bold tracking-tight">
+              <h1 className="truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
                 {resume.fileName}
               </h1>
             </div>
 
-            <span
-              className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold ring-1 ${getStatusClasses(resume.status)}`}
-            >
+            <span className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold ring-1 ${getStatusClasses(resume.status)}`}>
               {resume.status || "Processing"}
             </span>
           </div>
         </header>
 
         <div className="grid gap-5 md:grid-cols-2">
-          {[{ label: "Resume Score", value: resume.resumeScore, color: getScoreTone(resume.resumeScore) }, { label: "ATS Score", value: resume.atsScore, color: getScoreTone(resume.atsScore) }].map((score) => (
+          {scoreCards.map((score) => (
             <div
               key={score.label}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-950"
+              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:ring-slate-800"
             >
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -155,9 +163,9 @@ export default function ResumeDetails() {
           ))}
         </div>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:ring-slate-800">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-100 text-lg dark:bg-cyan-950/60">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-100 text-lg dark:bg-cyan-950/60">
               ✨
             </div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -166,14 +174,14 @@ export default function ResumeDetails() {
           </div>
 
           <p className="leading-7 text-slate-600 dark:text-slate-300">
-            {resume.summary}
+            {resume.summary || "No summary has been generated yet."}
           </p>
         </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:ring-slate-800">
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg dark:bg-emerald-950/60">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-lg dark:bg-emerald-950/60">
                 ✅
               </div>
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -199,9 +207,9 @@ export default function ResumeDetails() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:ring-slate-800">
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-100 text-lg dark:bg-rose-950/60">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-100 text-lg dark:bg-rose-950/60">
                 ⚠️
               </div>
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -228,9 +236,9 @@ export default function ResumeDetails() {
           </section>
         </div>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:ring-slate-800">
           <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-lg dark:bg-violet-950/60">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-lg dark:bg-violet-950/60">
               💡
             </div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -243,7 +251,7 @@ export default function ResumeDetails() {
               resume.suggestions.map((suggestion, index) => (
                 <div
                   key={index}
-                  className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                 >
                   <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-xs font-bold text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-300">
                     {index + 1}

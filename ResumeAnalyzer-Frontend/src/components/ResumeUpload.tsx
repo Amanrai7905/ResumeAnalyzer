@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import {useCallback,useEffect,useRef,useState,} from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
@@ -7,12 +6,13 @@ import { useUpload } from "../context/UploadContext";
 import LoginRequiredModal from "./LoginRequiredModal";
 
 interface ResumeUploadProps {
-  onUploadSuccess: () => void;
+  onUploadSuccess?: () => void;
 }
 
 export default function ResumeUpload({onUploadSuccess,}: ResumeUploadProps) {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const autoUploadStarted = useRef(false);
 
   const navigate = useNavigate();
 
@@ -62,7 +62,7 @@ export default function ResumeUpload({onUploadSuccess,}: ResumeUploadProps) {
 
         setMessage( response.data.message ||"Resume uploaded successfully.");
 
-        onUploadSuccess();
+        onUploadSuccess?.();
         navigate("/resumes");
 
         setSelectedFile(null);
@@ -128,7 +128,14 @@ export default function ResumeUpload({onUploadSuccess,}: ResumeUploadProps) {
   // ===============================
 
   useEffect(() => {
-    if ( isAuthenticated && pendingFile && shouldAutoUpload && !uploading) {
+    if (
+      isAuthenticated &&
+      pendingFile &&
+      shouldAutoUpload &&
+      !uploading &&
+      !autoUploadStarted.current
+    ) {
+      autoUploadStarted.current = true;
       setShouldAutoUpload(false);
       void uploadResume(pendingFile);
     }
@@ -238,9 +245,11 @@ export default function ResumeUpload({onUploadSuccess,}: ResumeUploadProps) {
 
       <LoginRequiredModal
         isOpen={showLoginModal}
-        onClose={() =>
-          setShowLoginModal(false)
-        }
+        onClose={() => {
+          setShowLoginModal(false);
+          setPendingFile(null);
+          setShouldAutoUpload(false);
+        }}
         onLogin={() => {
           setShowLoginModal(false);
 

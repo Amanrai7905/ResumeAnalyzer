@@ -34,6 +34,12 @@ public class ResumeRepository : GenericRepository<Resume>, IResumeRepository
             resumes = resumes.Where(r =>r.FileName.Contains(query.Search) ||r.Summary.Contains(query.Search));
         }
 
+        if (!string.IsNullOrWhiteSpace(query.Status) &&
+            !string.Equals(query.Status, "All", StringComparison.OrdinalIgnoreCase))
+        {
+            resumes = resumes.Where(r => r.Status == query.Status);
+        }
+
         // Sorting
         resumes = query.SortBy.ToLower() switch
         {

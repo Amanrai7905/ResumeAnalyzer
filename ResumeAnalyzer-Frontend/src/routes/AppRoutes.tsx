@@ -79,11 +79,7 @@ function AppRoutes() {
 
                      <Route
                         path="/upload"
-                        element={
-                            <ResumeUpload onUploadSuccess={function (): void {
-                                throw new Error("Function not implemented.");
-                            } }/>
-                        }
+                         element={<ResumeUpload />}
                     />
 
                     <Route

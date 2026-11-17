@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { loginUser } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
+import { useUpload } from "../../context/UploadContext";
 import { loginSchema, type LoginFormData } from "../../validations/authValidation";
 
 function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { login } = useAuth();
+    const { pendingFile, shouldAutoUpload } = useUpload();
     const [authError, setAuthError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -26,7 +29,10 @@ function Login() {
         try {
             const response = await loginUser(data);
             login(response.accessToken, response.refreshToken);
-            navigate("/dashboard", { replace: true });
+            const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+            const destination =
+                pendingFile && shouldAutoUpload ? "/upload" : from || "/dashboard";
+            navigate(destination, { replace: true });
         } catch (error) {
             console.error(error);
             setAuthError("Invalid email or password. Please try again.");

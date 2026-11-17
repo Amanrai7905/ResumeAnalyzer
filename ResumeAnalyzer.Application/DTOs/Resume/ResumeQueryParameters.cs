@@ -22,6 +22,8 @@ namespace ResumeAnalyzer.Application.DTOs.Resume
 
         public string? Search { get; set; }
 
+        public string? Status { get; set; }
+
         public string SortBy { get; set; } = "UploadedAt";
 
         public string SortOrder { get; set; } = "desc";
